@@ -1,0 +1,8 @@
+user = root
+password = 'SQL_dev_1991@'
+
+user = admin
+password = 'admin2024'
+
+user = janunez
+password = 'psw123'

@@ -3,8 +3,8 @@ import mysql.connector as mc
 
 conn = mc.connect(
     host='localhost',
-    user='root',
-    passwd='SQL_dev_1991@',
+    user='janunez',
+    passwd='psw123',
     database="ddbb_test")
 
 cursor = conn.cursor()
@@ -14,14 +14,14 @@ sp = cursor.callproc # ejecuta una stored procedure
 
 
 #%% Creacion de nueva BBDD
-# cursor.execute("SHOW DATABASES")
-# for d in cursor:
-#     print(d)
-# cursor.execute("CREATE DATABASE ddbb_test")
+p("SHOW DATABASES")
+for d in cursor:
+    print(d)
+p("CREATE DATABASE IF NOT EXISTS ddbb_test")
 #%%
 
 
-############################################# CREACION DE USUARIOS y PERMISOS
+############################################# CREACION DE USUARIOS
 #%% Obtengo todos los usuarios creados
 query_users = """
     SELECT User, Host
@@ -29,26 +29,26 @@ query_users = """
 """
 p(query_users)
 users = cursor.fetchall()
-users = list(set(x[0] for x in users))
+# users = list(set(x[0] for x in users))
 print(users)
 #%%
 
 
 #%% Elimino usuario
-user = 'janunez'
-if user in users:
-    query_drop_user = f"""
-        DROP USER '{user}'@'localhost'
-    """
-    p(query_drop_user)
-    conn.commit()
-else:
-    print("Usuario no existe")
+# user = 'admin'
+# if user in users:
+#     query_drop_user = f"""
+#         DROP USER '{user}'@'localhost'
+#     """
+#     p(query_drop_user)
+#     conn.commit()
+# else:
+#     print("Usuario no existe")
 #%%
 
 
 #%% Creacion de usuarios
-user, passw = "admin", "admin"
+user, passw = "janunez", "psw123"
 if user not in users:
     create_user = f"""
         CREATE USER '{user}'@'localhost' IDENTIFIED BY '{passw}';
@@ -64,7 +64,8 @@ else:
 #%%
 
 
-#%% Asignacion de privilegios por usuario
+############################################# ASIGNACION DE PERMISOS
+#%% Privilegios totales al usuario admin
 user = 'admin'
 if user in users:
     grant_privileges_query = f"GRANT ALL PRIVILEGES ON ddbb_test.* TO '{user}'@'localhost';"
@@ -82,6 +83,35 @@ if user in users:
     except mc.Error as err:
         print(f"Error al aplicar los privilegios: {err}")
 #%%
+
+
+#%% Privilegio solo lectura al usuario janunez
+user = 'janunez'
+if user in users:
+    grant_privileges_query = f"GRANT SELECT ON ddbb_test.* TO '{user}'@'localhost';"
+    try:
+        p(grant_privileges_query)
+        conn.commit()
+        print(f"Permisos otorgados a '{user}' en la base de datos 'ddbb_test'.")
+    except mc.Error as err:
+        print(f"Error al asignar privilegios: {err}")
+
+    try:
+        p("FLUSH PRIVILEGES;")
+        conn.commit()
+        print("Privilegios actualizados correctamente.")
+    except mc.Error as err:
+        print(f"Error al aplicar los privilegios: {err}")
+#%%
+
+
+#%% Ver los permisos de cierto usuario
+user, host = 'janunez', 'localhost'
+p(f"SHOW GRANTS FOR '{user}'@'{host}';")
+privileges = cursor.fetchall()
+print(privileges[1])
+#%%
+
 
 
 ############################################# MANEJO DE TABLAS
@@ -165,6 +195,7 @@ show_procedures = """
 p(show_procedures)
 procedures = cursor.fetchall()
 procedures = [x for subx in procedures for x in subx]
+print(procedures)
 #%%
 
 
@@ -199,7 +230,6 @@ if not proc in procedures:
     """
     p(insert_funcionario)
 
-
 proc = 'DeleteCliente'
 if not proc in procedures:
     delete_cliente = f"""
@@ -212,7 +242,6 @@ if not proc in procedures:
     """
     p(delete_cliente)
 
-
 proc = 'DeleteFuncionario'
 if not proc in procedures:
     delete_funcionario = f"""
@@ -224,6 +253,16 @@ if not proc in procedures:
         END
     """
     p(delete_funcionario)
+
+proc = 'GetClientes'
+if not proc in procedures:
+    get_clientes = f"""
+        CREATE PROCEDURE {proc} ()
+        BEGIN
+            SELECT * FROM t_clientes;
+        END
+    """
+    p(get_clientes)
 
 conn.commit()
 #%%
@@ -259,6 +298,20 @@ conn.commit()
 # drop_procedure = "DROP PROCEDURE IF EXISTS InsertFuncionario;"
 # cursor.execute(drop_procedure)
 # conn.commit()
+#%%
+
+
+############################################# CONSULTA DE DATOS
+#%% Obtengo datos de una tabla
+import pandas as pd
+get_data = """
+    SELECT *
+    FROM t_funcionarios
+    """
+p(get_data)
+data = cursor.fetchall()
+data = pd.DataFrame(data)
+print(data)
 #%%
 
 
