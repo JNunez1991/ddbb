@@ -13,13 +13,75 @@ sp = cursor.callproc # ejecuta una stored procedure
 #%%
 
 
-#%% Creacion de nueva BBDD 
+#%% Creacion de nueva BBDD
 # cursor.execute("SHOW DATABASES")
 # for d in cursor:
 #     print(d)
 # cursor.execute("CREATE DATABASE ddbb_test")
 #%%
 
+
+############################################# CREACION DE USUARIOS y PERMISOS
+#%% Obtengo todos los usuarios creados
+query_users = """
+    SELECT User, Host
+    FROM mysql.user
+"""
+p(query_users)
+users = cursor.fetchall()
+users = list(set(x[0] for x in users))
+print(users)
+#%%
+
+
+#%% Elimino usuario
+user = 'janunez'
+if user in users:
+    query_drop_user = f"""
+        DROP USER '{user}'@'localhost'
+    """
+    p(query_drop_user)
+    conn.commit()
+else:
+    print("Usuario no existe")
+#%%
+
+
+#%% Creacion de usuarios
+user, passw = "admin", "admin"
+if user not in users:
+    create_user = f"""
+        CREATE USER '{user}'@'localhost' IDENTIFIED BY '{passw}';
+        """
+    try:
+        p(create_user)
+        conn.commit()
+        print(f"Usuario '{user}' creado exitosamente.")
+    except mc.Error as err:
+        print(f"Error al crear el usuario: {err}")
+else:
+    print("Usario ya existente")
+#%%
+
+
+#%% Asignacion de privilegios por usuario
+user = 'admin'
+if user in users:
+    grant_privileges_query = f"GRANT ALL PRIVILEGES ON ddbb_test.* TO '{user}'@'localhost';"
+    try:
+        p(grant_privileges_query)
+        conn.commit()
+        print(f"Permisos otorgados a '{user}' en la base de datos 'ddbb_test'.")
+    except mc.Error as err:
+        print(f"Error al asignar privilegios: {err}")
+
+    try:
+        p("FLUSH PRIVILEGES;")
+        conn.commit()
+        print("Privilegios actualizados correctamente.")
+    except mc.Error as err:
+        print(f"Error al aplicar los privilegios: {err}")
+#%%
 
 
 ############################################# MANEJO DE TABLAS
@@ -201,12 +263,6 @@ conn.commit()
 
 
 ############################################# DESCONECTO
-
-
-
-
-
-
 #%% Cierro conexion
 conn.close()
 #%%
