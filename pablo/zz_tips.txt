@@ -1,0 +1,27 @@
+Ordenar tabla dinamica por mes cronologico del año y no alfabetico
+	1. Insertar tabla dinamica sobre la tabla de referencia -- agregarla al modelo de datos 
+	2. Marcar la tabla dinamica -- analisis -- Grupos -- Crear grupo de seleccion -- Ahi elegir MESES
+	2. En power pivot, ir a la nueva columna de MESES y sustituir por esta formula:
+		=SWITCH(MONTH([Fecha]); 
+	        1; "Enero"; 
+	        2; "Febrero"; 
+	        3; "Marzo"; 
+	        4; "Abril"; 
+	        5; "Mayo"; 
+	        6; "Junio"; 
+	        7; "Julio"; 
+	        8; "Agosto"; 
+	        9; "Setiembre"; 
+	        10; "Octubre"; 
+	        11; "Noviembre"; 
+	        12; "Diciembre") 
+	3. Agregar el campo nuevo a la tabla dinamica
+	4. Marcar una casilla dentro de esa nueva columna de meses
+	5. Ordenar -- Mas opciones de ordenacion
+	6. Marcar Ascendente A a Z -- Por: Mes
+	7. Mas opciones -- Desmarcar la opcion de ordenar automaticamente -- En primer criterio de ordenacion ir a la ultima opcion que dice "enero febrero marzo"
+
+
+
+Curso Excel
+https://www.youtube.com/watch?v=GorNlHirLko&list=PLGX39GU9MAeqXIm3OYmnLg0elifUA403_
